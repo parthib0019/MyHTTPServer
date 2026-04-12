@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/workspace/Study/Syllabus/MyHTTPServer/build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

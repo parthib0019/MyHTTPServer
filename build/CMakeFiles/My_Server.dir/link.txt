@@ -1,1 +1,0 @@
-/usr/bin/cc -Wl,--dependency-file=CMakeFiles/My_Server.dir/link.d CMakeFiles/My_Server.dir/main.c.o CMakeFiles/My_Server.dir/src/myserver.c.o -o My_Server  -lpthread
