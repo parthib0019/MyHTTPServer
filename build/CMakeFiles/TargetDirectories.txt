@@ -1,0 +1,3 @@
+/workspace/Study/Syllabus/MyHTTPServer/build/CMakeFiles/My_Server.dir
+/workspace/Study/Syllabus/MyHTTPServer/build/CMakeFiles/edit_cache.dir
+/workspace/Study/Syllabus/MyHTTPServer/build/CMakeFiles/rebuild_cache.dir
