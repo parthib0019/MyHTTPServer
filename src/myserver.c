@@ -7,12 +7,15 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../include/myserver.h"
+#include <pthread.h>
 
 ////// some variable declarations
 // waiting queue
 ClientNode *head = NULL;
 ClientNode *tail = NULL;
+bool dequeueAble = true;
 
+pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;    
 
 //////function declearation
 void init_connection_pool(Connection *pool, size_t size){
@@ -83,6 +86,7 @@ bool enqueueOfClient(int socket_fd, int node_id){
     new_node->socket_fd = socket_fd;
     new_node->node_id = node_id;
     new_node->next = NULL;
+    pthread_mutex_lock(&queue_mutex);
     if (tail == NULL){
         head = new_node;
         tail = new_node;
@@ -90,27 +94,36 @@ bool enqueueOfClient(int socket_fd, int node_id){
         tail->next = new_node;
         tail = new_node;
     }
+    pthread_mutex_unlock(&queue_mutex);
     return true;
 }
 
 int* dequeueOfClient(){
-    if (head == NULL){
+    pthread_mutex_lock(&queue_mutex);
+    if (head == NULL || dequeueAble == false){
+        pthread_mutex_unlock(&queue_mutex);
         return NULL;
     }else if(head->next == NULL){
+        dequeueAble = false;
         int *arrClient = (int *)malloc(2*sizeof(int));
         arrClient[0] = head->socket_fd;
         arrClient[1] = head->node_id;
         head = NULL;
         free(tail);
         tail = NULL;
+        dequeueAble = true;
+        pthread_mutex_unlock(&queue_mutex);
         return arrClient;
     }else{
+        dequeueAble = false;
         ClientNode *temp = head;
         head = head->next;
         int *arrClient = (int *)malloc(2*sizeof(int));
         arrClient[0] = temp->socket_fd;
         arrClient[1] = temp->node_id;
         free(temp);
+        dequeueAble = true;
+        pthread_mutex_unlock(&queue_mutex);
         return arrClient;
     }
 }
@@ -125,6 +138,13 @@ void *worker_thread(void *args){
         }
         int client_socket = arrClient[0];
         int node_id = arrClient[1];
+
+        // reading the request of the browser
+        char buffer[4096];
+        memset(buffer, 0, 4096);
+        read(client_socket, buffer, 4096-1);
+        printf("Browser says:\t%s\n", buffer);
+        //writing the response to the browser
         char *http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, you are connected to the server\n";
         write(client_socket, http_response, strlen(http_response));
         close(client_socket);
