@@ -143,7 +143,14 @@ void *worker_thread(void *args){
         char buffer[4096];
         memset(buffer, 0, 4096);
         read(client_socket, buffer, 4096-1);
-        printf("Browser says:\t%s\n", buffer);
+        // printf("Browser says:%s", buffer);
+        // fetching request type
+        char requestType[5];
+        for(int i =0;i<5;i++){
+            requestType[i] = buffer[i];
+        }
+        requestType[4] = '\0';
+        printf("%s\n", requestType);
         //writing the response to the browser
         char *http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, you are connected to the server\n";
         write(client_socket, http_response, strlen(http_response));

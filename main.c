@@ -30,13 +30,11 @@ int main(){
             perror("Failed to accept connection");
             continue; // Don't crash the server, just skip to the next loop iteration
         }
-        printf("A new client connected!\n");
         int clientIndex = get_free_connection_index(connection_pool, 1024);
         if (clientIndex < 0){
             printf("no valid connection index found");
             continue;
         }
-        printf("client connection successfully at index %d\n", clientIndex);
         connection_pool[clientIndex].socket_fd = client_socket;
         bool enqueueState = enqueueOfClient(client_socket, clientIndex);
         if (!enqueueState){
