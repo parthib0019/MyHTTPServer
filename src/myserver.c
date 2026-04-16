@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
@@ -143,17 +144,24 @@ void *worker_thread(void *args){
         char buffer[4096];
         memset(buffer, 0, 4096);
         read(client_socket, buffer, 4096-1);
-        // printf("Browser says:%s", buffer);
-        // fetching request type
-        char requestType[5];
-        for(int i =0;i<5;i++){
-            requestType[i] = buffer[i];
+
+        char *method = strtok(buffer, " "); 
+        char *path = strtok(NULL, " ");
+        if (method && path) {
+            printf("Request: %s %s\n", method, path);
+            // 3. The Router (The logic I gave you last time!)
+            char *response;
+            if (strcmp(path, "/home") == 0) {
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nWelcome Home!";
+            } else if (strcmp(path, "/secret") == 0) {
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nTop Secret Caltech Page!";
+            } else if(strcmp(path, "/") == 0){
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nWelcome Home!";
+            }else {
+                response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nError 404: Not Found";
+            }
+            write(client_socket, response, strlen(response));
         }
-        requestType[4] = '\0';
-        printf("%s\n", requestType);
-        //writing the response to the browser
-        char *http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, you are connected to the server\n";
-        write(client_socket, http_response, strlen(http_response));
         close(client_socket);
         connection_pool[node_id].state = Disable;
         free(arrClient);
